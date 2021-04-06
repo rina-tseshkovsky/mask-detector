@@ -1,12 +1,12 @@
 from bottle import run, get, post, request, delete, route, template
 import sqlite3
 import os.path
+import random
 
 #to write a route for login
 
 @post('/send_buffer')
 def accept_data():
-    print("debug accept data")
     buffer = request.json['buffer']
     conn = sqlite3.connect('masking.db')
     #c = cursor
@@ -20,12 +20,39 @@ def accept_data():
         conn.commit()
     conn.close()
 
+@route('/add-user', method='POST')
+#adds a new usre to the users sql 
+def do_add_user():
+    l_username = request.forms.get('username')
+    l_pwd = request.forms.get('password')
+    l_id = 12 #TODO: add later
+
+    conn = sqlite3.connect('masking.db')
+    c = conn.cursor()
+    c.execute("INSERT INTO users(ID, NAME, PASSWORD) VALUES(?, ?, ?)", (l_id, l_username, l_pwd))
+    print("user " + l_username + " was added succesfully")
+    conn.commit()
+    conn.close()
+    return template('op-succes.tpl', op_name = "add user")
+#-----------------------------------------------------
+
+@route('/delete-user', method = 'POST')
+# function deletes a user from databace
+def do_delete_user():
+    l_name = request.forms.get('username')
+    print("username: " + l_name)
+    conn = sqlite3.connect('masking.db')
+    c = conn.cursor()
+    c.execute("DELETE FROM users WHERE name=?", (l_name,))
+    conn.commit()
+    return template('op-succes.tpl', op_name = "delete user")
+
 @route('/main')
 def main_menu():
     print("entering main route")
     return template('main.tpl')
 
-#main tpl
+# main tpl
 @route('/main', method = "post")
 def do_main_menu():
     if request.forms.get('bt1') == "Users" :
@@ -33,31 +60,46 @@ def do_main_menu():
     if request.forms.get('bt2') == "Sensors" :
         return template('sensors.tpl')
     if request.forms.get('bt3') == "SQL Request" :
-        print("reached sql request")
         return template('sql-request.tpl')
     if request.forms.get('bt4') == "DB Opse" :
-        print("reached db-opse.tpl")
         return template('db-opse.tpl')
 
 #users tpl
 @route('/users', method = "post")
+# function that sends us from users template 
+# to other avaible themplates
 def do_users_menu():
     if request.forms.get('bt1') == "Add User" :
         return template('add-user.tpl', usr_id=222)
     elif request.forms.get('bt2') == "Delete User" :
-        print("reached delete user")
         return template('delete-user.tpl',  usr_id=222)
     elif request.forms.get('bt3') == "Show All Users" :
-        return template('show-all-users.tpl')
+        conn = sqlite3.connect('masking.db')
+        c = conn.cursor()
+        c.execute("SELECT * FROM users")
+        rows = c.fetchall()
+        for row in rows:
+            print(row[1])
+        return template('show-all-users.tpl', tpl_rows = rows)
     elif request.forms.get('bt4') == "Back" :
         return template('main.tpl')
     else:
         print("Wrong selection")
 
+@route('/user-added', method = "post")
+# function that takes us back to the main menu from user-added
+def do_added_menu():
+    if request.forms.get('bt1') == "Back" :
+        return template('main.tpl')
+
+@route('/show-all-users', method = "post")
+# function that takes us back to the main menu from show-all-users
+def show(): 
+    if request.forms.get('bt1') == "Back" :
+        return template('main.tpl')
 
 @get('/test')
 def test():
-    print("entering test")
     my_status = "2"
     cou = 0
     #select status from row_data table
@@ -87,9 +129,16 @@ def do_sql_request():
     c = conn.cursor()
     c.execute(sql_query)
     rows = c.fetchall()
-    #for row in rows:
-        #print(row[1])
-    return template('templae-test3.tpl', tpl_tows=rows)
+    
+    for row in rows:
+        for el in row:
+            if type(el) == int:
+                el = str(el)
+            print(el + " "),
+        print("")
+
+    return template('show-sql-request.tpl', sql_request=sql_query, tpl_rows=rows)
+
 
 def initialize():
     if os.path.isfile('masking.db'):
@@ -100,7 +149,7 @@ def initialize():
         c = conn.cursor()
         c.execute("CREATE TABLE raw_data(id INTEGER, date TEXT, status INTEGER)")
         c.execute("CREATE TABLE users(id INTEGER, name TEXT, password INTEGER)")
-        #c.execute("CREATE TABLE sensors(id INTEGER, date TEXT, status INTEGER)")
+        #c.execute("CREATE TABLE sensors(id INTEGER, password INTEGER)")
 
         conn.close() 
 

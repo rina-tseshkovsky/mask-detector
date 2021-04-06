@@ -44,6 +44,11 @@
                 font-size: 100px;
                 color: whitesmoke;
             }
-            
+
+            table, th, td {
+                border: 1px solid black;
+                border-collapse: collapse;
+            }
+
         </style>
     </head>
