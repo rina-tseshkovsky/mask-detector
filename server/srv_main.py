@@ -20,6 +20,87 @@ def accept_data():
         conn.commit()
     conn.close()
 
+<<<<<<< Updated upstream
+=======
+#USERS
+#--------------------------------------------------------------
+@route('/add-user', method='POST')
+#adds a new usre to the users sql 
+def do_add_user():
+    l_username = request.forms.get('username')
+    l_pwd = request.forms.get('password')
+    l_id = 12 #TODO: add later
+
+    conn = sqlite3.connect('masking.db')
+    c = conn.cursor()
+    c.execute("INSERT INTO users(ID, NAME, PASSWORD) VALUES(?, ?, ?)", (l_id, l_username, l_pwd))
+    print("user " + l_username + " was added succesfully")
+    conn.commit()
+    conn.close()
+    return template('op-succes.tpl', op_name = "add user")
+
+
+@route('/delete-user', method = 'POST')
+# function deletes a user from databace
+def do_delete_user():
+    l_name = request.forms.get('username')
+    print("username: " + l_name)
+    conn = sqlite3.connect('masking.db')
+    c = conn.cursor()
+    c.execute("DELETE FROM users WHERE name=?", (l_name,))
+    conn.commit()
+    return template('op-succes.tpl', op_name = "delete user")
+
+#--------------------------------------------------------------
+
+#SENSORS
+#--------------------------------------------------------------
+@route('/sensors', method = "post")
+def do_sensors_menu():
+    if request.forms.get('bt1') == "Add Sensor" :
+        return template('add-user.tpl')
+    elif request.forms.get('bt2') == "Delete Sensor" :
+        return template('delete-user.tpl')
+    elif request.forms.get('bt3') == "Show All Sensor" :
+        conn = sqlite3.connect('masking.db')
+        c = conn.cursor()
+        c.execute("SELECT * FROM sensors")
+        rows = c.fetchall()
+        for row in rows:
+            print(row[1])
+        return template('show-all-users.tpl', tpl_rows = rows)
+    elif request.forms.get('bt4') == "Back" :
+        return template('main.tpl')
+    else:
+        print("Wrong selection")
+
+@route('/add-sensor', method='POST')
+#adds a new usre to the users sql 
+def do_add_sensor():
+    l_UUID = request.forms.get('UUID')
+    l_pwd = request.forms.get('password')
+
+    conn = sqlite3.connect('masking.db')
+    c = conn.cursor()
+    #c.execute("INSERT INTO sensors(UUID, PASSWORD) VALUES(?, ?)", (l_UUID l_pwd))
+    print("sensor " + l_UUID + " was added succesfully")
+    conn.commit()
+    conn.close()
+    return template('op-succes.tpl', op_name = "add sensor")
+
+@route('/delete-sensor', method = 'POST')
+# function deletes a sensor from databace
+def do_delete_sensor():
+    l_UUID = request.forms.get('UUID')
+    print("UUID: " + l_UUID)
+    conn = sqlite3.connect('masking.db')
+    c = conn.cursor()
+    c.execute("DELETE FROM sensors WHERE UUID=?", (l_UUID,))
+    conn.commit()
+    return template('op-succes.tpl', op_name = "delete sensor")
+#-----------------------------------------------------
+
+>>>>>>> Stashed changes
 @route('/main')
 def main_menu():
     print("entering main route")
@@ -80,6 +161,8 @@ def sql_request():
         </form>   
     '''
 
+# add to sql request in main
+# to add a table to this page
 @route('/sql-request', method='POST')
 def do_sql_request():
     sql_query = request.forms.get('sql-query')
@@ -87,9 +170,22 @@ def do_sql_request():
     c = conn.cursor()
     c.execute(sql_query)
     rows = c.fetchall()
+<<<<<<< Updated upstream
     #for row in rows:
         #print(row[1])
     return template('templae-test3.tpl', tpl_tows=rows)
+=======
+    
+    for row in rows:
+        for el in row:
+            #if type(el) == int:
+            #    el = str(el)
+            print(el + " "),
+        print("")
+
+    return template('show-sql-request.tpl', sql_request=sql_query, tpl_rows=rows)
+
+>>>>>>> Stashed changes
 
 def initialize():
     if os.path.isfile('masking.db'):
@@ -98,9 +194,15 @@ def initialize():
         print("creating the database")
         conn = sqlite3.connect('masking.db')
         c = conn.cursor()
+<<<<<<< Updated upstream
         c.execute("CREATE TABLE raw_data(id INTEGER, date TEXT, status INTEGER)")
         c.execute("CREATE TABLE users(id INTEGER, name TEXT, password INTEGER)")
         #c.execute("CREATE TABLE sensors(id INTEGER, date TEXT, status INTEGER)")
+=======
+        c.execute("CREATE TABLE raw_data(id TEXT, date TEXT, status TEXT)")
+        c.execute("CREATE TABLE users(id TEXT, name TEXT, password TEXT)")
+        c.execute("CREATE TABLE sensors(UUID TEXT, password TEXT)")
+>>>>>>> Stashed changes
 
         conn.close() 
 
