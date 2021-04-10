@@ -1,12 +1,12 @@
 from bottle import run, get, post, request, delete, route, template
 import sqlite3
 import os.path
+import random
 
 #to write a route for login
 
 @post('/send_buffer')
 def accept_data():
-    print("debug accept data")
     buffer = request.json['buffer']
     conn = sqlite3.connect('masking.db')
     #c = cursor
@@ -19,6 +19,7 @@ def accept_data():
         c.execute("INSERT INTO raw_data(ID, DATE, STATUS) VALUES(?, ?, ?)", (id, date, status))
         conn.commit()
     conn.close()
+
 
 #USERS
 #--------------------------------------------------------------
@@ -36,7 +37,7 @@ def do_add_user():
     conn.commit()
     conn.close()
     return template('op-succes.tpl', op_name = "add user")
-
+#-----------------------------------------------------
 
 @route('/delete-user', method = 'POST')
 # function deletes a user from databace
@@ -50,7 +51,6 @@ def do_delete_user():
     return template('op-succes.tpl', op_name = "delete user")
 
 #--------------------------------------------------------------
-
 #SENSORS
 #--------------------------------------------------------------
 @route('/sensors', method = "post")
@@ -103,7 +103,7 @@ def main_menu():
     print("entering main route")
     return template('main.tpl')
 
-#main tpl
+# main tpl
 @route('/main', method = "post")
 def do_main_menu():
     if request.forms.get('bt1') == "Users" :
@@ -111,10 +111,8 @@ def do_main_menu():
     if request.forms.get('bt2') == "Sensors" :
         return template('sensors.tpl')
     if request.forms.get('bt3') == "SQL Request" :
-        print("reached sql request")
         return template('sql-request.tpl')
     if request.forms.get('bt4') == "DB Opse" :
-        print("reached db-opse.tpl")
         return template('db-opse.tpl')
 
 #users tpl
@@ -126,7 +124,6 @@ def do_users_menu():
     if request.forms.get('bt1') == "Add User" :
         return template('add-user.tpl', usr_id=222)
     elif request.forms.get('bt2') == "Delete User" :
-        print("reached delete user")
         return template('delete-user.tpl',  usr_id=222)
     elif request.forms.get('bt3') == "Show All Users" :
         conn = sqlite3.connect('masking.db')
@@ -155,7 +152,6 @@ def show():
 
 @get('/test')
 def test():
-    print("entering test")
     my_status = "2"
     cou = 0
     #select status from row_data table

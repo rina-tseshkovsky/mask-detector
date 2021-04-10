@@ -10,6 +10,5 @@
             Password: <input name="password" type="text" /><br>
             <input value="Add New User" type="submit" />
         </form>  
-
     </body>    
 </html>
