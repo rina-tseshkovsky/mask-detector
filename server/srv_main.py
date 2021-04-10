@@ -120,6 +120,8 @@ def do_main_menu():
 #users tpl
 ##
 @route('/users', method = "post")
+# function that sends us from users template 
+# to other avaible themplates
 def do_users_menu():
     if request.forms.get('bt1') == "Add User" :
         return template('add-user.tpl', usr_id=222)
@@ -127,12 +129,29 @@ def do_users_menu():
         print("reached delete user")
         return template('delete-user.tpl',  usr_id=222)
     elif request.forms.get('bt3') == "Show All Users" :
-        return template('show-all-users.tpl')
+        conn = sqlite3.connect('masking.db')
+        c = conn.cursor()
+        c.execute("SELECT * FROM users")
+        rows = c.fetchall()
+        for row in rows:
+            print(row[1])
+        return template('show-all-users.tpl', tpl_rows = rows)
     elif request.forms.get('bt4') == "Back" :
         return template('main.tpl')
     else:
         print("Wrong selection")
 
+@route('/user-added', method = "post")
+# function that takes us back to the main menu from user-added
+def do_added_menu():
+    if request.forms.get('bt1') == "Back" :
+        return template('main.tpl')
+
+@route('/show-all-users', method = "post")
+# function that takes us back to the main menu from show-all-users
+def show(): 
+    if request.forms.get('bt1') == "Back" :
+        return template('main.tpl')
 
 @get('/test')
 def test():
@@ -150,15 +169,6 @@ def test():
     return template('templae-test3.tpl', tpl_tows=rows)
     #return template('template-test2.tpl', h_cou = cou, h_status = my_status)
 
-@route('/sql-request')
-def sql_request():
-    return '''
-        <form action="/sql-request" method="post">
-            Input SQL query: <input name="sql-query" type="text" />
-            <input value="SQL Rrequest1" type="submit" />
-        </form>   
-    '''
-
 # add to sql request in main
 # to add a table to this page
 @route('/sql-request', method='POST')
@@ -171,8 +181,8 @@ def do_sql_request():
     
     for row in rows:
         for el in row:
-            #if type(el) == int:
-            #    el = str(el)
+            if type(el) == int:
+                el = str(el)
             print(el + " "),
         print("")
 
