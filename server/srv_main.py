@@ -20,8 +20,6 @@ def accept_data():
         conn.commit()
     conn.close()
 
-<<<<<<< Updated upstream
-=======
 #USERS
 #--------------------------------------------------------------
 @route('/add-user', method='POST')
@@ -100,7 +98,6 @@ def do_delete_sensor():
     return template('op-succes.tpl', op_name = "delete sensor")
 #-----------------------------------------------------
 
->>>>>>> Stashed changes
 @route('/main')
 def main_menu():
     print("entering main route")
@@ -171,11 +168,6 @@ def do_sql_request():
     c = conn.cursor()
     c.execute(sql_query)
     rows = c.fetchall()
-<<<<<<< Updated upstream
-    #for row in rows:
-        #print(row[1])
-    return template('templae-test3.tpl', tpl_tows=rows)
-=======
     
     for row in rows:
         for el in row:
@@ -186,8 +178,6 @@ def do_sql_request():
 
     return template('show-sql-request.tpl', sql_request=sql_query, tpl_rows=rows)
 
->>>>>>> Stashed changes
-
 def initialize():
     if os.path.isfile('masking.db'):
         print("the database already exists")
@@ -195,15 +185,9 @@ def initialize():
         print("creating the database")
         conn = sqlite3.connect('masking.db')
         c = conn.cursor()
-<<<<<<< Updated upstream
-        c.execute("CREATE TABLE raw_data(id INTEGER, date TEXT, status INTEGER)")
-        c.execute("CREATE TABLE users(id INTEGER, name TEXT, password INTEGER)")
-        #c.execute("CREATE TABLE sensors(id INTEGER, date TEXT, status INTEGER)")
-=======
         c.execute("CREATE TABLE raw_data(id TEXT, date TEXT, status TEXT)")
         c.execute("CREATE TABLE users(id TEXT, name TEXT, password TEXT)")
         c.execute("CREATE TABLE sensors(UUID TEXT, password TEXT)")
->>>>>>> Stashed changes
 
         conn.close() 
 
