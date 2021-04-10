@@ -56,9 +56,9 @@ def do_delete_user():
 @route('/sensors', method = "post")
 def do_sensors_menu():
     if request.forms.get('bt1') == "Add Sensor" :
-        return template('add-user.tpl')
+        return template('add-sensor.tpl')
     elif request.forms.get('bt2') == "Delete Sensor" :
-        return template('delete-user.tpl')
+        return template('delete-sensor.tpl')
     elif request.forms.get('bt3') == "Show All Sensor" :
         conn = sqlite3.connect('masking.db')
         c = conn.cursor()
@@ -66,7 +66,7 @@ def do_sensors_menu():
         rows = c.fetchall()
         for row in rows:
             print(row[1])
-        return template('show-all-users.tpl', tpl_rows = rows)
+        return template('show-all-sensors.tpl', tpl_rows = rows)
     elif request.forms.get('bt4') == "Back" :
         return template('main.tpl')
     else:
