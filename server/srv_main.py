@@ -1,9 +1,20 @@
+# This Python file uses the following encoding: utf-8
 from bottle import run, get, post, request, delete, route, template
 import sqlite3
 import os.path
 import random
 
 #to write a route for login
+
+#------------------------
+# SENSOR related routes
+#------------------------
+
+@post('/connect_sensor')
+def connect_sensor():
+    sensor_ask = request.json.get('sensor_uuid')
+    print(sensor_ask)
+    return "Connect sensor - OK"
 
 @post('/send_buffer')
 def accept_data():
