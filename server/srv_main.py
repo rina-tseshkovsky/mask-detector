@@ -18,6 +18,7 @@ def connect_sensor():
 
 @post('/send_buffer')
 def accept_data():
+    print("send_buffer: accepted")
     buffer = request.json['buffer']
     conn = sqlite3.connect('masking.db')
     #c = cursor
@@ -26,7 +27,7 @@ def accept_data():
         id = block['id']
         date = block['date']
         status = block['status']
-        print("DEBUG: " + id + ", " + date + ", " + status)
+        print("send_buffer: " , id, ", ", date, ", ", status)
         c.execute("INSERT INTO raw_data(ID, DATE, STATUS) VALUES(?, ?, ?)", (id, date, status))
         conn.commit()
     conn.close()

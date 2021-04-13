@@ -7,14 +7,49 @@ import imutils
 import cv2
 import os
 import http.client
-import time
-
-srv_conn_imeout = 10
+from datetime import datetime
+import time ## TODO: check and remove
 import json
 
-##
-##
-##
+## Globals
+srvIP       = "127.0.0.1"
+srvPort     = "8080"
+srvTout  = 10
+
+jsonHeaders = {'Content-type' : 'application/json'}
+sensorUID   = '1000'  # TODO: get UID from MAC address + PID
+
+
+def connectServer(serverIP, serverPort):
+    jsonData = json.dumps({ 'sensor_uuid' : sensorUID })
+    httpConn = http.client.HTTPConnection(serverIP, serverPort, timeout=srvTout)
+    httpConn.request('POST', '/connect_sensor', jsonData, jsonHeaders)
+    connResponce = httpConn.getresponse()
+    
+    print("[INFO] Connection to HTTP server ", connResponce.read().decode())
+
+def addBuffer(maskPeoples, nomaskPeoples):
+    totalPeoples = maskPeoples + nomaskPeoples
+    if totalPeoples != 0 :
+        
+        dataRec = {}
+        dataRec['id'] = sensorUID
+        dataRec['date'] = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+        dataRec['status'] = round((maskPeoples * 100) / totalPeoples)
+        
+        dataRecCopy = dataRec.copy()
+        dataList.append(dataRecCopy)
+        jsonText["buffer"] = dataList
+        
+        print("[DEBUG] output JSON is ", jsonText)
+        jsonData = json.dumps(jsonText)
+        httpConn = http.client.HTTPConnection(srvIP, srvPort, timeout=srvTout)
+        httpConn.request('POST', '/send_buffer', jsonData, jsonHeaders)
+        connResponce = httpConn.getresponse()
+        print(connResponce.read().decode())
+    else:
+        print("DEBUG] no person found")
+        
 def simple_mokup():
         conn = http.client.HTTPConnection('127.0.0.1', 8080, timeout=10)
         #this heather defines type of hatt data= json 
@@ -102,18 +137,14 @@ def sensor_check_masking(frame, faceNet, maskNet):
         # return a 2-tuple of the face locations and their corresponding
         # locations
         return (locs, preds)
+
 ## MAIN @@
 srv_ip = "127.0.0.1"
 srv_port = "8080"
 srv_conn_imeout = 10
 
 # Init HTTP connection to the server
-connect_headers = {'Content-type' : 'application/json'} 
-connect_json = json.dumps({'sensor_uuid' : '001'})
-conn = http.client.HTTPConnection(srv_ip, srv_port, timeout=srv_conn_imeout)
-conn.request('POST', '/connect_sensor', connect_json, connect_headers)
-response = conn.getresponse()
-print(response.read().decode())
+connectServer(srvIP, srvPort)
 
 # TODO: process possible errors here
 
@@ -146,7 +177,7 @@ while True:
         (locs, preds) = sensor_check_masking(frame, faceNet, maskNet)
 
 
-        maskPeople = nomaskPeople = 0
+        maskPeoples = nomaskPeoples = 0
         # loop over the detected face locations and their corresponding
         # locations
         for (box, pred) in zip(locs, preds):
@@ -160,9 +191,9 @@ while True:
                 color = (0, 255, 0) if label == "Mask" else (0, 0, 255)
                 
                 if label == "Mask" :
-                    maskPeople += 1
+                    maskPeoples += 1
                 else:
-                    nomaskPeople += 1
+                    nomaskPeoples += 1
                 # include the probability in the label
                 label = "{}: {:.2f}%".format(label, max(mask, withoutMask) * 100)
 
@@ -172,13 +203,11 @@ while True:
                         cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 2)
                 cv2.rectangle(frame, (startX, startY), (endX, endY), color, 2)
 
-        totalPeoples = maskPeople + nomaskPeople
-        if totalPeoples != 0 : 
-            persentinMask = (maskPeople * 100)/(maskPeople + nomaskPeople)
-            print("[DEBUG] mask = %d no mask = %d total = %d mask_persent = %d" %
-            (maskPeople, nomaskPeople, maskPeople + nomaskPeople, persentinMask))
-        else:
-            print("[DEBUG] no one persone detected")
+        jsonText = {}
+        dataList = []
+
+        addBuffer(maskPeoples, nomaskPeoples)
+            
         # show the output frame%
         cv2.imshow("Frame", frame)
         key = cv2.waitKey(5000) & 0xFF
