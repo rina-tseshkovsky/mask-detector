@@ -10,15 +10,78 @@ import http.client
 from datetime import datetime
 import time ## TODO: check and remove
 import json
+import glob
+import argparse
+
 
 ## Globals
-srvIP       = "127.0.0.1"
-srvPort     = "8080"
 srvTout  = 10
 
 jsonHeaders = {'Content-type' : 'application/json'}
 sensorUID   = '1000'  # TODO: get UID from MAC address + PID
 
+##---------------------------------------------------------------------
+
+##
+class FrameMaker:
+    """
+    Switching between data sources, depending on params
+    
+    Attributes
+    ----------
+    mode : int 
+        data source selector. 
+        0 - get data from video cam 
+        1 - get the data from testing directory
+    src : int
+        number of video port
+    src : string
+        path to testing directory
+        
+    Methods
+    -------
+    read()
+        reading one frame from data source and reduse it to appropriate size
+    close()
+        jently stop the imput device before finish
+    """
+    def __init__(self, mode, src):
+        self.mode = mode
+        if self.mode == 0: ## get frame from video input
+            print("[DEBUG] initialie video sreeam as data source")
+            self.default_vs = 0
+            self.vs = VideoStream(src=0).start()
+        elif self.mode == 1: ## get frame from pictures array source
+            print("[DEBUG] initialise pictures array as data source")
+            img_dir = os.path.join(src, '*.jpeg')
+            self.ps = glob.glob(img_dir)
+            self.index = 0
+            self.max_index = len(self.ps)
+        else:
+            print("ERROR: wrong mode")
+    
+    def read(self):
+    
+        print("[DEBUG] FrameMaker config - mode = ", self.mode)
+    
+        if self.mode == 0:
+            frame = self.vs.read()
+        else:
+            ## cyclic running on picture source
+            if self.index == self.max_index :
+                self.index = 0
+                
+            frame = cv2.imread(self.ps[self.index])
+            self.index += 1
+            
+        frame = imutils.resize(frame, width=400)
+        return frame
+
+    def close(self):
+        if self.mode == 0:
+            frame = self.vs.stop()
+            
+        return None
 
 def connectServer(serverIP, serverPort):
     jsonData = json.dumps({ 'sensor_uuid' : sensorUID })
@@ -26,7 +89,8 @@ def connectServer(serverIP, serverPort):
     httpConn.request('POST', '/connect_sensor', jsonData, jsonHeaders)
     connResponce = httpConn.getresponse()
     
-    print("[INFO] Connection to HTTP server ", connResponce.read().decode())
+    print("[INFO] Connection to HTTP server %s:%s" % (serverIP, serverPort))  
+    print(connResponce.read().decode())
 
 def addBuffer(maskPeoples, nomaskPeoples):
     totalPeoples = maskPeoples + nomaskPeoples
@@ -50,33 +114,7 @@ def addBuffer(maskPeoples, nomaskPeoples):
     else:
         print("DEBUG] no person found")
         
-def simple_mokup():
-        conn = http.client.HTTPConnection('127.0.0.1', 8080, timeout=10)
-        #this heather defines type of hatt data= json 
-        headers = {'Content-type' : 'application/json'} 
-        #an example for json
-        json_txt = {"buffer": [
-                    {'id' : '001', 'date' : '30.04.1968 12:55', 'status' : '0'},
-                    {'id' : '001', 'date' : '30.04.1968 12:56', 'status' : '1'},
-                    {'id' : '001', 'date' : '30.04.1968 12:57', 'status' : '1'},
-                    {'id' : '001', 'date' : '30.04.1968 12:58', 'status' : '0'},
-                    {'id' : '001', 'date' : '30.07.1968 12:58', 'status' : '2'},
-                    {'id' : '001', 'date' : '30.06.1968 12:58', 'status' : '2'},
-                    {'id' : '001', 'date' : '30.05.1968 12:58', 'status' : '2'},
-                    {'id' : '001', 'date' : '31.04.1968 12:58', 'status' : '0'},
-                    {'id' : '001', 'date' : '30.04.1968 12:59', 'status' : '2'}
-                    ]
-        }
-        #dumps- converts text to jason 
-        json_data = json.dumps(json_txt)
-        
-        #sends request to the server 
-        conn.request('POST', '/send_buffer', json_data, headers)
-        
-        response = conn.getresponse()
-        print(response.read().decode())
-
-def sensor_check_masking(frame, faceNet, maskNet):
+def checkMasking(frame, faceNet, maskNet):
         # grab the dimensions of the frame and then construct a blob
         # from it
         (h, w) = frame.shape[:2]
@@ -138,17 +176,22 @@ def sensor_check_masking(frame, faceNet, maskNet):
         # locations
         return (locs, preds)
 
-## MAIN @@
-srv_ip = "127.0.0.1"
-srv_port = "8080"
-srv_conn_imeout = 10
+# MAIN #
+argParser = argparse.ArgumentParser()
+argParser.add_argument('--i', type=str, help="IP address of the server", required=False, default='127.0.0.1')
+argParser.add_argument('--p', type=str, help="Port to connect to the server", required=False, default='8080')
+argParser.add_argument('--t', type=str, help="testing data directory", required=False)
+argParser.add_argument('--D', help="Set up debug mode", action='store_true') # TODO: next-step feature
+argsData = argParser.parse_args()
+
+srvIP   = argsData.i
+srvPort = argsData.p
+dataDir = argsData.t
+
+print("[DEBUG] data_dir: ", dataDir)
 
 # Init HTTP connection to the server
 connectServer(srvIP, srvPort)
-
-# TODO: process possible errors here
-
-# Init CV supplimentary components
 
 # Load serialized face detector model from disk
 faceDetectorDir = r"face_detector"
@@ -160,24 +203,31 @@ faceNet = cv2.dnn.readNet(prototxtPath, weightsPath)
 # load the face mask detector model from disk
 maskNet = load_model("mask_detector.model")
 
-# initialize the video stream
-print("[INFO] starting video stream...")
-vs = VideoStream(src=0).start()
+# initialize the data source
+
+if dataDir != None :
+    print("[INFO] data source is directory")
+    fm = FrameMaker(1, 'test_data')
+else:
+    print("[INFO] data source is video stream...")
+    fm = FrameMaker(0, 0)
+    
 
 
 while True:
         # grab the frame from the threaded video stream and resize it
         # to have a maximum width of 400 pixels
-        frame = vs.read()
-        frame = imutils.resize(frame, width=400)
+        
+        ##frame = vs.read()
+        ##frame = imutils.resize(frame, width=400)
+        frame = fm.read()
 
         # detect faces in the frame and determine if they are wearing a
         # face mask or not
-##(locs, preds) = detect_and_:split predict_mask(frame, faceNet, maskNet)
-        (locs, preds) = sensor_check_masking(frame, faceNet, maskNet)
-
+        (locs, preds) = checkMasking(frame, faceNet, maskNet)
 
         maskPeoples = nomaskPeoples = 0
+
         # loop over the detected face locations and their corresponding
         # locations
         for (box, pred) in zip(locs, preds):
@@ -213,15 +263,10 @@ while True:
         key = cv2.waitKey(5000) & 0xFF
 
         # if the `q` key was pressed, break from the loop
-        if key == ord("q"):
+        if key == ord('q'):
                 break
 
-        ##time.sleep(2)
-
-print("[DEBUG] exit from process 1")
 # do a bit of cleanup
 cv2.destroyAllWindows()
-print("[DEBUG] exit from process 2")
-vs.stop()
-print("[DEBUG] exit from process 3")
-conn.close()
+fm.close()
+#httpConn.close()
