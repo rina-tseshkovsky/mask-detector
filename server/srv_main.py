@@ -181,7 +181,9 @@ def test():
 # to add a table to this page
 @route('/sql-request', method='POST')
 def do_sql_request():
+    print("debug: do_sql_request reached")
     sql_query = request.forms.get('sql-query')
+    print("Query: ", sql_query)
     conn = sqlite3.connect('masking.db')
     c = conn.cursor()
     c.execute(sql_query)

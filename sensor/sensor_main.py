@@ -42,6 +42,7 @@ class FrameMaker:
     -------
     read()
         reading one frame from data source and reduse it to appropriate size
+        returns adjusted frame
     close()
         jently stop the imput device before finish
     """
@@ -244,6 +245,7 @@ while True:
                     maskPeoples += 1
                 else:
                     nomaskPeoples += 1
+                    
                 # include the probability in the label
                 label = "{}: {:.2f}%".format(label, max(mask, withoutMask) * 100)
 
