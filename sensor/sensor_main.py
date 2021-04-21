@@ -12,6 +12,7 @@ import time ## TODO: check and remove
 import json
 import glob
 import argparse
+import uuid
 
 
 ## Globals
@@ -183,13 +184,31 @@ argParser.add_argument('--i', type=str, help="IP address of the server", require
 argParser.add_argument('--p', type=str, help="Port to connect to the server", required=False, default='8080')
 argParser.add_argument('--t', type=str, help="testing data directory", required=False)
 argParser.add_argument('--D', help="Set up debug mode", action='store_true') # TODO: next-step feature
+argParser.add_argument('--c', help="configuration file", required=False, default='config.dat')
+
 argsData = argParser.parse_args()
 
 srvIP   = argsData.i
 srvPort = argsData.p
 dataDir = argsData.t
+configFile = argsData.c
 
 print("[DEBUG] data_dir: ", dataDir)
+
+# Sensor UUID
+if os.path.isfile(configFile):
+    # Read from file
+    file_object = open(configFile, 'r')
+    sensorUID  = file_object.readline().rstrip('\n')
+else:
+    # Create and save to file
+    sensorUID = str(uuid.uuid1())
+    file_object = open(configFile, 'w')
+    file_object.write(sensorUID)
+ 
+file_object.close()
+
+print("[DEBUG] UUID: " + sensorUID)
 
 # Init HTTP connection to the server
 connectServer(srvIP, srvPort)
