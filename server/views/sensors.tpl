@@ -2,7 +2,7 @@
     % include('head.tpl')
     <body>
         % include('header.tpl')
-        % include('toolbar.tpl')
+
         <form action="/sensors" method="post">
             <input type="submit" name="bt1" value="Add Sensor" />
             <input type="submit" name="bt2" value="Delete Sensor" />

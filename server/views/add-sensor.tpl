@@ -2,7 +2,6 @@
     % include('head.tpl')
     <body>
         % include('header.tpl')
-        % include('toolbar.tpl')
 
         <form action="/add-sensor" method="post">
             Sensor UUID: <input name="UUID" type="text" /><br>

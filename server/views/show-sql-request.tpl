@@ -2,7 +2,7 @@
     % include('head.tpl')
     <body>
         % include('header.tpl')
-        % include('toolbar.tpl')
+
         <h2>response for SQL request: </h2><br>
         <h2> {{sql_request}} </h2>
         <table style="width:100%">

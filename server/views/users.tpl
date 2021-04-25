@@ -2,7 +2,7 @@
     % include('head.tpl')
     <body>
         % include('header.tpl')
-        % include('toolbar.tpl')
+
         <form action="/users" method="post">
             <input type="submit" name="bt1" value="Add User" />
             <input type="submit" name="bt2" value="Delete User" />

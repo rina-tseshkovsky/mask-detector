@@ -2,7 +2,6 @@
     % include('head.tpl')
     <body>
         % include('header.tpl')
-        % include('toolbar.tpl')
 
         <form action="/add-user" method="post">
             User ID: {{usr_id}}<br>
