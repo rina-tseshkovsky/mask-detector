@@ -13,40 +13,13 @@ def img(filepath):
     return static_file(filepath, root="../static/img")
 
 #------------------------
-# SENSOR related routes
-#------------------------
-
-@post('/connect_sensor')
-def connect_sensor():
-    sensor_ask = request.json.get('sensor_uuid')
-    print(sensor_ask)
-    return "Connect sensor - OK"
-
-@post('/send_buffer')
-def accept_data():
-    print("send_buffer: accepted")
-    buffer = request.json['buffer']
-    conn = sqlite3.connect('masking.db')
-    #c = cursor
-    c = conn.cursor()
-    for block in buffer:
-        id = block['id']
-        date = block['date']
-        status = block['status']
-        print("send_buffer: " , id, ", ", date, ", ", status)
-        c.execute("INSERT INTO raw_data(ID, DATE, STATUS) VALUES(?, ?, ?)", (id, date, status))
-        conn.commit()
-    conn.close()
-
-
 #MAIN
-#--------------------------------------------------------------
+#------------------------
 @route('/main')
 def main_menu():
     print("entering main route")
     return template('main.tpl')
-#--------------------------------------------------------------
-
+#-----------------------------------------------------
 @route('/main', method = "post")
 def do_main_menu():
     if request.forms.get('bt1') == "Users" :
@@ -57,11 +30,11 @@ def do_main_menu():
         return template('sql-request.tpl')
     if request.forms.get('bt4') == "DB Opse" :
         return template('db-opse.tpl')
-#--------------------------------------------------------------
+#-----------------------------------------------------
 
-
+#------------------------
 #USERS
-#--------------------------------------------------------------
+#------------------------
 @route('/users', method = "post")
 # function that sends us from users template 
 # to other avaible themplates
@@ -116,17 +89,16 @@ def do_delete_user():
     c.execute("DELETE FROM users WHERE name=?", (l_name,))
     conn.commit()
     return template('op-succes.tpl', op_name = "delete user")
-#--------------------------------------------------------------
-
+#-----------------------------------------------------
 @route('/show-all-users', method = "post")
 # function that takes us back to the main menu from show-all-users
 def show(): 
     if request.forms.get('bt1') == "Back" :
         return template('users.tpl')
-#--------------------------------------------------------------
-
+#-----------------------------------------------------
+#------------------------
 #SENSORS
-#--------------------------------------------------------------
+#------------------------
 @route('/sensors', method = "post")
 def do_sensors_menu():
     if request.forms.get('bt1') == "Add Sensor" :
@@ -187,6 +159,31 @@ def show():
         return template('main.tpl')
 #-----------------------------------------------------
 
+#------------------------
+# SENSOR-related routes
+#------------------------
+@post('/connect_sensor')
+def connect_sensor():
+    sensor_ask = request.json.get('sensor_uuid')
+    print(sensor_ask)
+    return "Connect sensor - OK"
+
+@post('/send_buffer')
+def accept_data():
+    print("send_buffer: accepted")
+    buffer = request.json['buffer']
+    conn = sqlite3.connect('masking.db')
+    #c = cursor
+    c = conn.cursor()
+    for block in buffer:
+        id = block['id']
+        date = block['date']
+        status = block['status']
+        print("send_buffer: " , id, ", ", date, ", ", status)
+        c.execute("INSERT INTO raw_data(ID, DATE, STATUS) VALUES(?, ?, ?)", (id, date, status))
+        conn.commit()
+    conn.close()
+
 
 
 @route('/user-added', method = "post")
@@ -211,8 +208,9 @@ def test():
     return template('templae-test3.tpl', tpl_tows=rows)
     #return template('template-test2.tpl', h_cou = cou, h_status = my_status)
 
+#------------------------
 #SQL REQUEST
-#--------------------------------------------------------------
+#------------------------
 # add to sql request in main
 # to add a table to this page
 @route('/sql-request', method='POST')
@@ -235,7 +233,7 @@ def do_sql_request():
             print(el + " "),
         print("")
     return template('show-sql-request.tpl', sql_request=sql_query, tpl_rows=rows)
-#--------------------------------------------------------------
+#-----------------------------------------------------
 
 def initialize():
     if os.path.isfile('masking.db'):
