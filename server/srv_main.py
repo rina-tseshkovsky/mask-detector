@@ -235,6 +235,12 @@ def do_sql_request():
     return template('show-sql-request.tpl', sql_request=sql_query, tpl_rows=rows)
 #-----------------------------------------------------
 
+
+#--------
+# DB OPS
+#--------
+@route
+
 def initialize():
     if os.path.isfile('masking.db'):
         print("the database already exists")
