@@ -4,6 +4,6 @@
             </div> 
               
             <div id = "rightbox">
-                <h1>   Mask Detector</h1>
+                <h1>   <sup>Mask Detector<sup></h1>
             </div>
         </div>

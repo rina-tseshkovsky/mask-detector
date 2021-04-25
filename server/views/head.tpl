@@ -1,6 +1,20 @@
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <style>
+
+            body {
+                background-color: #e6e6ff;
+            }
+
+            table, th, td {
+                    border: 1px solid black;
+                    border-collapse: collapse;
+                }
+                th, td {
+                    padding: 15px;
+                }
+
+
             .btn-group button {
             background-color: #b3b3e6; /* Green background */
             border: 1px solid #600080; /* Green border */
