@@ -1,10 +1,16 @@
 # This Python file uses the following encoding: utf-8
-from bottle import run, get, post, request, delete, route, template
+from bottle import run, get, post, request, delete, route, template, static_file
 import sqlite3
 import os.path
 import random
 
 #to write a route for login
+
+# STATIC DATA
+@get("/static/img/<filepath:re:.*\.(jpg|png|gif|ico|svg)>")
+def img(filepath):
+    print("[DEBUG]: ", filepath)
+    return static_file(filepath, root="../static/img")
 
 #------------------------
 # SENSOR related routes

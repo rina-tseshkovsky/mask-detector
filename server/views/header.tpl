@@ -1,6 +1,6 @@
         <div id = "boxes">              
             <div id = "leftbox">
-                <img src="face mask3.png" alt="Workplace" usemap="#workmap" width="200" height="150">
+                <img src="static/img/logo.jpg" alt="Workplace" usemap="#workmap" width="200" height="200">
             </div> 
               
             <div id = "rightbox">
