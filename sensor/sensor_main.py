@@ -16,9 +16,9 @@ import uuid
 
 
 ## Globals
-srvTout  = 10
+srvTout  = 10 # connection time out
 
-jsonHeaders = {'Content-type' : 'application/json'}
+jsonHeaders = {'Content-type' : 'application/json'} 
 sensorUID   = '1000'  # TODO: get UID from MAC address + PID
 
 ##---------------------------------------------------------------------

@@ -13,13 +13,39 @@ def img(filepath):
     return static_file(filepath, root="../static/img")
 
 #------------------------
-#MAIN
+# SENSOR related routes
 #------------------------
+@post('/connect_sensor')
+def connect_sensor():
+    sensor_ask = request.json.get('sensor_uuid')
+    print(sensor_ask)
+    return "Connect sensor - OK"
+
+@post('/send_buffer')
+def accept_data():
+    print("send_buffer: accepted")
+    buffer = request.json['buffer']
+    conn = sqlite3.connect('masking.db')
+    #c = cursor
+    c = conn.cursor()
+    for block in buffer:
+        id = block['id']
+        date = block['date']
+        status = block['status']
+        print("send_buffer: " , id, ", ", date, ", ", status)
+        c.execute("INSERT INTO raw_data(ID, DATE, STATUS) VALUES(?, ?, ?)", (id, date, status))
+        conn.commit()
+    conn.close()
+
+
+#MAIN
+#--------------------------------------------------------------
 @route('/main')
 def main_menu():
     print("entering main route")
     return template('main.tpl')
-#-----------------------------------------------------
+#--------------------------------------------------------------
+
 @route('/main', method = "post")
 def do_main_menu():
     if request.forms.get('bt1') == "Users" :
@@ -30,11 +56,11 @@ def do_main_menu():
         return template('sql-request.tpl')
     if request.forms.get('bt4') == "DB Opse" :
         return template('db-opse.tpl')
-#-----------------------------------------------------
+#--------------------------------------------------------------
 
-#------------------------
+
 #USERS
-#------------------------
+#--------------------------------------------------------------
 @route('/users', method = "post")
 # function that sends us from users template 
 # to other avaible themplates
@@ -89,23 +115,24 @@ def do_delete_user():
     c.execute("DELETE FROM users WHERE name=?", (l_name,))
     conn.commit()
     return template('op-succes.tpl', op_name = "delete user")
-#-----------------------------------------------------
+#--------------------------------------------------------------
+
 @route('/show-all-users', method = "post")
 # function that takes us back to the main menu from show-all-users
 def show(): 
     if request.forms.get('bt1') == "Back" :
         return template('users.tpl')
-#-----------------------------------------------------
-#------------------------
+#--------------------------------------------------------------
+
 #SENSORS
-#------------------------
+#--------------------------------------------------------------
 @route('/sensors', method = "post")
 def do_sensors_menu():
     if request.forms.get('bt1') == "Add Sensor" :
         return template('add-sensor.tpl')
     elif request.forms.get('bt2') == "Delete Sensor" :
         return template('delete-sensor.tpl')
-    elif request.forms.get('bt3') == "Show All Sensor" :
+    elif request.forms.get('bt3') == "Show All Sensors" :
         conn = sqlite3.connect('masking.db')
         c = conn.cursor()
         c.execute("SELECT * FROM sensors")
@@ -125,13 +152,13 @@ def do_add_sensor():
     if request.forms.get('bt1') == "Back" :
             return template('sensors.tpl')
 
-    l_UUID = request.forms.get('UUID')
+    l_UUID = request.forms.get('uuid')
     l_pwd = request.forms.get('password')
-
+    print (l_UUID, " ", l_pwd)
     conn = sqlite3.connect('masking.db')
     c = conn.cursor()
-    #c.execute("INSERT INTO sensors(UUID, PASSWORD) VALUES(?, ?)", (l_UUID l_pwd))
-    print("sensor " + l_UUID + " was added succesfully")
+    c.execute("INSERT INTO sensors(UUID, PASSWORD) VALUES(?, ?)", (l_UUID, l_pwd))
+    print("sensor ", l_UUID, " was added succesfully")
     conn.commit()
     conn.close()
     return template('op-succes.tpl', op_name = "add sensor")
@@ -143,11 +170,11 @@ def do_delete_sensor():
     if request.forms.get('bt1') == "Back" :
             return template('sensors.tpl')
 
-    l_UUID = request.forms.get('UUID')
-    print("UUID: " + l_UUID)
+    l_UUID = request.forms.get('uuid')
+    print("uuid: " + l_UUID)
     conn = sqlite3.connect('masking.db')
     c = conn.cursor()
-    c.execute("DELETE FROM sensors WHERE UUID=?", (l_UUID,))
+    c.execute("DELETE FROM sensors WHERE uuid=?", (l_UUID,))
     conn.commit()
     return template('op-succes.tpl', op_name = "delete sensor")
 #-----------------------------------------------------
@@ -158,31 +185,6 @@ def show():
     if request.forms.get('bt1') == "Back" :
         return template('main.tpl')
 #-----------------------------------------------------
-
-#------------------------
-# SENSOR-related routes
-#------------------------
-@post('/connect_sensor')
-def connect_sensor():
-    sensor_ask = request.json.get('sensor_uuid')
-    print(sensor_ask)
-    return "Connect sensor - OK"
-
-@post('/send_buffer')
-def accept_data():
-    print("send_buffer: accepted")
-    buffer = request.json['buffer']
-    conn = sqlite3.connect('masking.db')
-    #c = cursor
-    c = conn.cursor()
-    for block in buffer:
-        id = block['id']
-        date = block['date']
-        status = block['status']
-        print("send_buffer: " , id, ", ", date, ", ", status)
-        c.execute("INSERT INTO raw_data(ID, DATE, STATUS) VALUES(?, ?, ?)", (id, date, status))
-        conn.commit()
-    conn.close()
 
 
 
@@ -208,9 +210,8 @@ def test():
     return template('templae-test3.tpl', tpl_tows=rows)
     #return template('template-test2.tpl', h_cou = cou, h_status = my_status)
 
-#------------------------
 #SQL REQUEST
-#------------------------
+#--------------------------------------------------------------
 # add to sql request in main
 # to add a table to this page
 @route('/sql-request', method='POST')
@@ -233,7 +234,7 @@ def do_sql_request():
             print(el + " "),
         print("")
     return template('show-sql-request.tpl', sql_request=sql_query, tpl_rows=rows)
-#-----------------------------------------------------
+#--------------------------------------------------------------
 
 def initialize():
     if os.path.isfile('masking.db'):
@@ -244,7 +245,7 @@ def initialize():
         c = conn.cursor()
         c.execute("CREATE TABLE raw_data(id TEXT, date TEXT, status TEXT)")
         c.execute("CREATE TABLE users(id TEXT, name TEXT, password TEXT)")
-        c.execute("CREATE TABLE sensors(UUID TEXT, password TEXT)")
+        c.execute("CREATE TABLE sensors(uuid TEXT, password TEXT)")
 
         conn.close() 
     #יוצרת DB במידה והאו לא קיים

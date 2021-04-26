@@ -1,16 +1,13 @@
 <html>
-  <head>
-    <style>
-    #mytable  th, td{
-      border: 1px solid black;
-      border-collapse: collapse;
-    }
-    </style>
-  </head>
-
+  % include('head.tpl')
   <body>
+    % include('header.tpl')
+
     <h2>Users Table</h2>
-    <input type="submit" name="bt4" value="Back" />
+    
+    <form action="/delete-user" method="post">
+        <input type="submit" name="bt1" value="Back" />
+      </form> 
 
     <table id="mytable" style="width:100%">
       <tr>
