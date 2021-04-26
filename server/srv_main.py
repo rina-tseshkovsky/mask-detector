@@ -37,8 +37,14 @@ def accept_data():
         conn.commit()
     conn.close()
 
+# LOGIN
+#--------------------------------------------------------------
+@route('/Login')
+def main_menu():
+    print("entering login route")
+    return template('login.tpl')
 
-#MAIN
+# MAIN
 #--------------------------------------------------------------
 @route('/main')
 def main_menu():
@@ -248,6 +254,8 @@ def do_dbops_menu():
         return template('rst-db.tpl')
     elif request.forms.get('bt3') == "Purge Table" :
         return template('prg-tbl.tpl')
+    elif request.forms.get('bt5') == "Table List" :
+        return template('table-list.tpl')
     elif request.forms.get('bt4') == "Back" :
         return template('main.tpl')
     else:
