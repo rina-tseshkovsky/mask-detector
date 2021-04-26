@@ -1,6 +1,10 @@
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <style>
+            #mytable,  th, td{
+                border: 1px solid black;
+                border-collapse: collapse;
+            }
 
             body {
                 background-color: #e6e6ff;
