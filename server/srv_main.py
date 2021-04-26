@@ -239,7 +239,18 @@ def do_sql_request():
 #--------
 # DB OPS
 #--------
-@route
+@route('/dbops', method = "post")
+def do_dbops_menu():
+    if request.forms.get('bt1') == "Backup DB" :
+        return template('bkp-db.tpl')
+    elif request.forms.get('bt2') == "Restore DB" :
+        return template('rst-db.tpl')
+    elif request.forms.get('bt3') == "Purge Table" :
+        return template('prg-tbl.tpl')
+    elif request.forms.get('bt4') == "Back" :
+        return template('main.tpl')
+    else:
+        print("[DEBUG] DB Ops - wrong selection")
 
 def initialize():
     if os.path.isfile('masking.db'):
