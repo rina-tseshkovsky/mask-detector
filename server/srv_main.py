@@ -3,6 +3,13 @@ from bottle import run, get, post, request, delete, route, template, static_file
 import sqlite3
 import os.path
 import random
+import glob
+
+# Globals
+g_bkp_dir = '.' # TODO: get the backup dir from running environment
+ 
+
+
 
 #to write a route for login
 
@@ -254,12 +261,75 @@ def do_dbops_menu():
         return template('rst-db.tpl')
     elif request.forms.get('bt3') == "Purge Table" :
         return template('prg-tbl.tpl')
-    elif request.forms.get('bt5') == "Table List" :
-        return template('table-list.tpl')
+    elif request.forms.get('bt5') == "File List" :
+        # create list of DB backup files
+        bkp_files_path = os.path.join(g_bkp_dir, '*.dbkp')
+        bkp_files_list = glob.glob(bkp_files_path)
+        print("[DEBUG] backup files list: ", bkp_files_list)
+        return template('table-list.tpl', lst_header = "DB backup files list", lst_data = bkp_files_list)
     elif request.forms.get('bt4') == "Back" :
         return template('main.tpl')
     else:
         print("[DEBUG] DB Ops - wrong selection")
+
+@route('/bkp-db', method='POST')
+def do_bkp_db():
+    if request.forms.get('bt1') == "Back" :
+        return template('db-opse.tpl')
+        
+    l_filename = request.forms.get('name') + ".dbkp"
+    print("[DEBUG] backup file name: ", l_filename)
+    con = sqlite3.connect('masking.db')
+    bkp = sqlite3.connect(l_filename)
+    with bkp:
+        con.backup(bkp, pages=1, progress=progress)
+    bkp.close()
+    con.close()
+    return template('op-succes.tpl', op_name = "backup db")
+
+def progress(status, remaining, total):
+    print(f'Copied {total-remaining} of {total} pages...')
+    
+@route('/rst-db', method='POST')
+def do_rst_db():
+    """ Reset DB handler """
+    if request.forms.get('bt1') == "Back" :
+        return template('db-opse.tpl')
+    
+    l_restore_db_name = request.forms.get('file_name') + ".dbkp"
+    
+    # reading backup db in memory, close it 
+    # and then write it back to original file
+    src = sqlite3.connect(l_restore_db_name)
+    mem = sqlite3.connect(':memory:')
+    src.backup(dst)
+    src.close()
+    dst = sqlite3.connect('masking.db')
+    with dst:
+        mem.backup(dst, pages=1, progress=progress)
+    dst.close()
+    mem.close()
+    
+        
+@route('/prg-tbl', method='POST')
+def do_prg_tbl():
+    """ Purge Table handler """
+    if request.forms.get('bt1') == "Back" :
+        return template('db-opse.tpl')
+    
+    l_tbl_name = request.forms.get('tbl_name')
+    l_drop_cmd = "DELETE FROM " + l_tbl_name + ";" 
+    
+    print("[DEBUG] drop the table " + l_tbl_name + "with the command \"" + l_drop_cmd + "\"")
+    
+    con = sqlite3.connect('masking.db')
+    c = con.cursor()
+    c.execute(l_drop_cmd,)
+    con.commit()
+    con.close()
+    l_op_name = "delete all data from table " + l_tbl_name
+    return template('op-succes.tpl', op_name = l_op_name)
+
 
 def initialize():
     if os.path.isfile('masking.db'):

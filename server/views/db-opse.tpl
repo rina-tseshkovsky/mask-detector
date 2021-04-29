@@ -7,7 +7,7 @@
             <input type="submit" name="bt1" value="Backup DB" />
             <input type="submit" name="bt2" value="Restore DB" />
             <input type="submit" name="bt3" value="Purge Table" />
-            <input type="submit" name="bt5" value="Table List" />
+            <input type="submit" name="bt5" value="File List" />
             <input type="submit" name="bt4" value="Back" />
         </form> 
     </body>    
