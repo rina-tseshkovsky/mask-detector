@@ -309,7 +309,7 @@ def do_rst_db():
     # and then write it back to original file
     src = sqlite3.connect(l_restore_db_name)
     mem = sqlite3.connect(':memory:')
-    src.backup(dst)
+    src.backup(mem)
     src.close()
     dst = sqlite3.connect('masking.db')
     with dst:
