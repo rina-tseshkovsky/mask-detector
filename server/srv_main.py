@@ -39,10 +39,17 @@ def accept_data():
 
 # LOGIN
 #--------------------------------------------------------------
-@route('/Login')
-def main_menu():
+@route('/login')
+def login():
     print("entering login route")
     return template('login.tpl')
+#--------------------------------------------------------------
+
+@route('/login', method = "post")
+def do_login():
+    if request.forms.get('bt1') == "Users" :
+        return template('users.tpl')
+    
 
 # MAIN
 #--------------------------------------------------------------
