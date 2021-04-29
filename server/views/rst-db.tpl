@@ -3,7 +3,11 @@
     <body>
         % include('header.tpl')
 		
-        <h2>Restoreing File</h2>
+        <!-- 
+        zadnitsa indeitsa 
+        -->
+
+        <h2>Restoreing Database</h2>
         <form action="/rst-db" method="post">
             File Name: <input name="file_name" type="text" /><br>
             <input value="Restore This File" type="submit" />

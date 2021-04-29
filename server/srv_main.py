@@ -289,12 +289,15 @@ def do_bkp_db():
     con = sqlite3.connect('masking.db')
     bkp = sqlite3.connect(l_filename)
     with bkp:
+        # backup- DB method
+        # pages- size of data transfering unit
         con.backup(bkp, pages=1, progress=progress)
     bkp.close()
     con.close()
     return template('op-succes.tpl', op_name = "backup db")
 
 def progress(status, remaining, total):
+    """ sending status notification during the backuo """
     print(f'Copied {total-remaining} of {total} pages...')
     
 @route('/rst-db', method='POST')
@@ -316,6 +319,8 @@ def do_rst_db():
         mem.backup(dst, pages=1, progress=progress)
     dst.close()
     mem.close()
+    return template('op-succes.tpl', op_name = "restore db")
+
     
         
 @route('/prg-tbl', method='POST')
