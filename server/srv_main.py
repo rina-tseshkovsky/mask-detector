@@ -2,6 +2,7 @@
 from bottle import run, get, post, request, delete, route, template, static_file
 import sqlite3
 import os.path
+import sys
 import random
 import glob
 
@@ -76,6 +77,8 @@ def do_main_menu():
         return template('sql-request.tpl')
     if request.forms.get('bt4') == "DB Opse" :
         return template('db-opse.tpl')
+    if request.forms.get('bt5') == "Exit" :
+        sys.stderr.close()
 #--------------------------------------------------------------
 
 

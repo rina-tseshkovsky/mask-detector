@@ -8,6 +8,7 @@
             <input type="submit" name="bt2" value="Sensors" />
             <input type="submit" name="bt3" value="SQL Request" />
             <input type="submit" name="bt4" value="DB Opse" />
+			<input type="submit" name="bt5" value="Exit" />
         </form> 
     </body>    
 </html>
